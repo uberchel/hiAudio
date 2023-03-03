@@ -52,46 +52,45 @@
    
     onReady(function () {
         
-        [].forEach.call(document.querySelectorAll(tagName), function (element) {
+        [].forEach.call(document.querySelectorAll(tagName), function (element, index) {
             element.state = 0;
             element.innerHTML = 'P';
             element.style.cssText = style;
-            var audio = element.dataset?.single == 1 ? gAudio  : new Audio();
-            element.addEventListener('click', function () {
-                if (curr && curr != this && element.dataset?.single == 1) {
+            element.dataset.index = index;
+            var isSingle = element.dataset?.single == 1;
+            var audio = isSingle ? gAudio  : new Audio();
+
+            audio.oncanplay = function () {
+                audio.play();
+            };
+
+            element.addEventListener('click', function (e) {
+                if (curr && curr != this && isSingle) {
                     curr.innerHTML = 'P';
                     element.state = 0;
-                    audio.pause();
                 }
+
                 switch (element.state) {
-                    case 0:
-                        audio.src = this.dataset.hisrc;
-                        audio.load();
-                        if (element.dataset?.single == 1) {
-                            curr = this; 
-                        }
+                    case 0: 
+                    if (isSingle) curr = this; 
+                    audio.src = element.dataset?.hisrc;
+                    audio.load();
                     break;
-                    case 1:
-                        audio.pause(); 
-                    break;
-                    case 2:
-                    audio.play(); 
+                    case 1: audio.pause(); break;
+                    case 2: audio.play(); 
                 }
-                
-                audio.oncanplaythrough = function () {
-                    audio.play();
-                };
 
                 audio.onplay = function () {
                     element.innerHTML = '||';
                     element.state = 1;
                 };
-
+    
                 audio.onpause = function () {
                     element.innerHTML = '>';
                     element.state = 2;
                 };
             });
+
         });
     });
 }('[data-hisrc]'));
